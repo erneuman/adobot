@@ -1,0 +1,85 @@
+adoBotPAT hwppgfbynfmcgr22pdibsp7eoxlwsyvjf4ilobq3kaj2xq7jpzha
+
+.\aggregator-cli.exe logon.azure -s 2e6b3a36-3c84-4e86-a6ba-71f8812ff693 -c 32c736c0-ba4b-4bee-88db-24ecff9805cf -t 72f988bf-86f1-41af-91ab-2d7cd011db47
+ -p ylHbCCITKkf8lkRWvg5APV5rw*w%#!
+
+Other Aggregator owners:
+Gregory.Schunemann@microsoft.com
+Guilaume Davion
+
+
+
+organization_url = 'https://dev.azure.com/microsoft/'
+
+# Create a connection to the org
+credentials = BasicAuthentication('', personal_access_token)
+connection = Connection(base_url=organization_url, creds=credentials)
+
+def emit(msg, *args):
+    print(msg % args)
+
+def print_work_item(work_item):
+    emit(
+        "{0} {1}: {2}".format(
+            work_item.fields["System.WorkItemType"],
+            work_item.id,
+            work_item.fields["System.Title"],
+        )
+    )
+
+wit = connection.clients_v6_0.get_work_item_tracking_client()
+q = wit.query_by_id('97b6e2d6-5fbc-4b41-861d-3e9e17b0baac')
+for w in q:
+    print_work_item(w)
+
+wiql = Wiql(
+        query="""
+        SELECT
+            [System.Id],
+            [System.WorkItemType],
+            [System.Title],
+            [System.AssignedTo],
+            [System.State],
+            [System.Tags],
+            [OSG.RiskAssessment],
+            [Microsoft.VSTS.Scheduling.TargetDate],
+            [OSG.ParentingNotifier.Internal],
+            [System.IterationLevel4],
+            [OSG.RiskAssessmentComment]
+        FROM workitems
+        WHERE
+            [System.TeamProject] = @project
+            AND [System.Tags] CONTAINS 'PrivatePreview'
+            AND [System.AreaPath] UNDER 'OS\MixedReality\MeshRuntimes\Presence\Holoportation'
+            AND [System.State] IN ('Started', 'Committed')
+        ORDER BY [OSG.RiskAssessment],
+            [System.State],
+            [OSG.Order],
+            [System.Id]"""
+    )
+# We limit number of results to 30 on purpose
+wiql_results = wit.query_by_wiql(wiql, top=30).work_items
+
+
+
+
+
+wiql = Wiql(
+    query="""
+    select [System.Id],
+        [System.WorkItemType],
+        [System.Title],
+        [System.State],
+        [System.AreaPath],
+        [System.IterationPath],
+        [System.Tags]
+    from WorkItems
+    where [System.AreaPath] UNDER 'OS\MixedReality\MeshRuntimes\Presence\Holoportation'
+    order by [System.ChangedDate] desc"""
+)
+# We limit number of results to 30 on purpose
+wiql_results = wit.query_by_wiql(wiql, top=30).work_items
+wiql_results
+
+
+ww.fields.update({'OSG.RiskAssessment':'On Track'})
